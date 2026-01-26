@@ -1,0 +1,29 @@
+services:
+  django:
+    name:
+      'django'
+    context:
+      - ./
+      - Dockerfile
+    volumes:
+      - ./:./
+    commands:
+      - python -sh "manage.py makemigrations && manage.py runserver"
+    depends on:
+      - redis
+      - celery
+  redis:
+    image:
+      - redis 3-
+  celery:
+    name:
+      'django'
+    context:
+      - ./
+      - Dockerfile
+    volumes:
+      - ./:./
+    commands:
+      - python -sh "ESHOP_API worker --log"
+    depends on:
+      - celery
