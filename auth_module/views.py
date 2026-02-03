@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render
 from django.utils.crypto import get_random_string
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -12,7 +11,9 @@ from user_module.models import User
 from rest_framework.permissions import AllowAny
 from .serializers import Login_Serializer,Signup_Serializer
 from utils.email_services import send_mails
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle,ScopedRateThrottle
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 class Login(APIView):
     permission_classes = [AllowAny]
     http_method_names = ['OPTIONS','POST']
@@ -47,7 +48,7 @@ class Login(APIView):
 class Signup(APIView):
     permission_classes = [AllowAny]
     http_method_names = ['OPTIONS', 'POST']
-    throttle_classes = [AnonRateThrottle]
+    throttle_classes = [ScopedRateThrottle('signup_throttle')]
     def post(self,request):
         ser=Signup_Serializer(data=request.data)
         if ser.is_valid():
@@ -95,3 +96,11 @@ class Activate_Account(View):
                 return Response(data={'message':'an error happend!please try again'},status=500)
 
 
+
+##this view is used to determine if the user is correctly authenticated or not
+class Who_Am_I(APIView):
+    throttle_classes = [AnonRateThrottle]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        return Response(data={'username':request.user.username,'email':request.user.email},status=200)
