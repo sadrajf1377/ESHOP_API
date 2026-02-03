@@ -2,13 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-PYTHONBUFFER 1
+ENV PYTHONWRITEBYTECODE 1
 
-PYTHONENV 1
 
-COPY .requirements.txt .
+COPY requirements.txt .
 
-RUN pip install -r requirements.txt --no-cache
+RUN pip install -r requirements.txt
 
 COPY . .
 

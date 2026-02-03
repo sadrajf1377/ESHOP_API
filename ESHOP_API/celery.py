@@ -1,7 +1,11 @@
 from celery import Celery
 import os
-app=Celery('ESHOP_API')
-os.environ.setdefault('django.confi:settings','ESHOP_API.settings')
-app.config_from_object('ESHOP_API')
 
-app.autodiscover_tasks()
+os.environ.setdefault('DJANGO_SETTINGS_MODULE','ESHOP_API.settings')
+
+celery_app=Celery('ESHOP_API')
+
+celery_app.config_from_object('django.conf:settings', namespace='CELERY')
+
+celery_app.autodiscover_tasks()
+

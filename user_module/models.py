@@ -14,8 +14,7 @@ class User(AbstractUser):
     activation_code=models.CharField(max_length=64,verbose_name="this code will be sent to users emails then users will use this code to activate their accounts"
                                      ,null=False,blank=False)
     balance=models.DecimalField(max_digits=5,decimal_places=3,default=00.00)
-    class Meta:
-        db_name='users'
+
 
 
 

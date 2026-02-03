@@ -1,29 +1,53 @@
 services:
-  django:
-    name:
-      'django'
-    context:
-      - ./
-      - Dockerfile
+  eshop_api:
+    container_name: 'ESHOP_API'
+    env_file:
+      - ./env/Django.env
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && gunicorn ESHOP_API.wsgi -w 4 -b 0.0.0.0:8000"
+
     volumes:
-      - ./:./
-    commands:
-      - python -sh "manage.py makemigrations && manage.py runserver"
-    depends on:
+      - .:/app
+    ports:
+      - "8000:8000"
+
+    depends_on:
       - redis
       - celery
+      - postgresql
+
+
   redis:
-    image:
-      - redis 3-
+    image: redis:7.0.11-alpine
+
+
   celery:
-    name:
-      'django'
-    context:
-      - ./
-      - Dockerfile
+    container_name: 'celery'
+    command: celery -A ESHOP_API worker --loglevel=info
+    build:
+      context: ./
+      dockerfile: Dockerfile
     volumes:
-      - ./:./
-    commands:
-      - python -sh "ESHOP_API worker --log"
-    depends on:
-      - celery
+      - .:/app
+    env_file:
+       - ./env/Django.env
+    depends_on:
+      - redis
+
+  postgresql:
+    image: postgres:16
+    container_name: postgresql_db
+    restart: always
+    env_file:
+      - ./env/DB.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+    pgdata:
+
+
